@@ -10,15 +10,18 @@ export function createBulletPool(size: number): Bullet[] {
 }
 
 // Classic arcade rule: only one player bullet may be on screen at a time.
-export function spawnPlayerBullet(pool: Bullet[], player: Player): void {
-  if (pool.some((bullet) => bullet.active)) return;
+// Returns true if a bullet was actually spawned, so callers can trigger the
+// shoot sound only on a real shot.
+export function spawnPlayerBullet(pool: Bullet[], player: Player): boolean {
+  if (pool.some((bullet) => bullet.active)) return false;
   const slot = pool.find((bullet) => !bullet.active);
-  if (!slot) return;
+  if (!slot) return false;
 
   slot.active = true;
   slot.x = player.x + player.width / 2 - (BULLET_WIDTH * BULLET_PIXEL_SIZE) / 2;
   slot.y = player.y - BULLET_HEIGHT * BULLET_PIXEL_SIZE;
   slot.vy = -PLAYER_BULLET_SPEED;
+  return true;
 }
 
 export function spawnAlienBullet(pool: Bullet[], x: number, y: number): void {

@@ -1,3 +1,4 @@
+import { AudioManager } from "@/game/audio";
 import { aabbOverlap } from "@/game/collision";
 import {
   ALIEN_FIRE_INTERVAL_MAX_MS,
@@ -6,6 +7,7 @@ import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
   COLORS,
+  EXTEND_PLAY_SCORE,
   RESPAWN_PAUSE_MS,
   SCORE_BY_TIER,
   UFO_SPAWN_INTERVAL_MAX_MS,
@@ -44,6 +46,7 @@ function randomBetween(min: number, max: number): number {
 
 export class GameEngine {
   private readonly input: InputState;
+  private readonly audio: AudioManager;
   private readonly player: Player;
   private readonly playerBullets: Bullet[];
   private readonly alienBullets: Bullet[];
@@ -51,11 +54,13 @@ export class GameEngine {
   private readonly bunkers: Bunker[];
   private readonly ufo: Ufo;
   private score = 0;
+  private extendPlayAwarded = false;
   private alienFireTimer = randomBetween(ALIEN_FIRE_INTERVAL_MIN_MS, ALIEN_FIRE_INTERVAL_MAX_MS);
   private ufoSpawnTimer = randomBetween(UFO_SPAWN_INTERVAL_MIN_MS, UFO_SPAWN_INTERVAL_MAX_MS);
 
-  constructor(input: InputState) {
+  constructor(input: InputState, audio: AudioManager) {
     this.input = input;
+    this.audio = audio;
     this.player = createPlayer();
     this.playerBullets = createBulletPool(PLAYER_BULLET_POOL_SIZE);
     this.alienBullets = createBulletPool(ALIEN_BULLET_POOL_SIZE);
@@ -74,15 +79,22 @@ export class GameEngine {
       }
     } else {
       updatePlayer(this.player, this.input, dtMs);
-      if (this.input.fire) {
-        spawnPlayerBullet(this.playerBullets, this.player);
+      if (this.input.fire && spawnPlayerBullet(this.playerBullets, this.player)) {
+        this.audio.playOneShot("shoot");
       }
     }
 
     updateBullets(this.playerBullets, dtMs);
     updateBullets(this.alienBullets, dtMs);
-    updateAlienFormation(this.aliens, dtMs);
+    if (updateAlienFormation(this.aliens, dtMs)) {
+      this.audio.stepMarch();
+    }
+
+    const wasUfoActive = this.ufo.active;
     updateUfo(this.ufo, dtMs);
+    if (wasUfoActive && !this.ufo.active) {
+      this.audio.stopUfoLoop();
+    }
 
     this.alienFireTimer -= dtMs;
     if (this.alienFireTimer <= 0) {
@@ -94,6 +106,7 @@ export class GameEngine {
       this.ufoSpawnTimer -= dtMs;
       if (this.ufoSpawnTimer <= 0) {
         spawnUfo(this.ufo);
+        this.audio.startUfoLoop();
         this.ufoSpawnTimer = randomBetween(UFO_SPAWN_INTERVAL_MIN_MS, UFO_SPAWN_INTERVAL_MAX_MS);
       }
     }
@@ -103,6 +116,14 @@ export class GameEngine {
     this.handlePlayerBulletCollisions();
     this.handleAlienBulletCollisions();
     this.handleUfoCollisions();
+    this.checkExtendPlay();
+  }
+
+  private checkExtendPlay(): void {
+    if (this.extendPlayAwarded || this.score < EXTEND_PLAY_SCORE) return;
+    this.extendPlayAwarded = true;
+    this.player.lives += 1;
+    this.audio.playOneShot("extendPlay");
   }
 
   private handleBunkerCollisions(bullets: Bullet[]): void {
@@ -139,6 +160,7 @@ export class GameEngine {
           alien.alive = false;
           bullet.active = false;
           this.score += SCORE_BY_TIER[alien.tier];
+          this.audio.playOneShot("invaderKilled");
           break;
         }
       }
@@ -155,6 +177,7 @@ export class GameEngine {
         this.player.lives -= 1;
         this.player.alive = false;
         this.player.respawnTimer = RESPAWN_PAUSE_MS;
+        this.audio.playOneShot("explosion");
         break;
       }
     }
@@ -168,6 +191,8 @@ export class GameEngine {
       if (aabbOverlap(bulletRect(bullet), uRect)) {
         bullet.active = false;
         this.ufo.active = false;
+        this.audio.stopUfoLoop();
+        this.audio.playOneShot("invaderKilled");
         this.score += randomUfoBonus();
         break;
       }

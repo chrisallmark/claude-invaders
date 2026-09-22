@@ -48,6 +48,8 @@ export const SCORE_BY_TIER: Record<AlienTier, number> = {
   2: 10,
 };
 
+export const EXTEND_PLAY_SCORE = 1500;
+
 export const BUNKER_COUNT = 3;
 export const BUNKER_PIXEL_SIZE = 4;
 export const BUNKER_Y = 170;

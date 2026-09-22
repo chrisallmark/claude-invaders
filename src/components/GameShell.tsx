@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AudioManager } from "@/game/audio";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, FIXED_STEP_MS } from "@/game/constants";
 import { GameEngine } from "@/game/engine";
 import { InputManager } from "@/game/input";
@@ -9,8 +10,19 @@ import TouchControls from "@/components/TouchControls";
 export default function GameShell() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [inputManager] = useState(() => new InputManager());
+  const [audioManager] = useState(() => new AudioManager());
 
   useEffect(() => inputManager.attachKeyboard(), [inputManager]);
+
+  useEffect(() => {
+    const unlock = () => audioManager.unlock();
+    window.addEventListener("keydown", unlock, { once: true });
+    window.addEventListener("pointerdown", unlock, { once: true });
+    return () => {
+      window.removeEventListener("keydown", unlock);
+      window.removeEventListener("pointerdown", unlock);
+    };
+  }, [audioManager]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -24,7 +36,7 @@ export default function GameShell() {
     ctx.imageSmoothingEnabled = false;
     ctx.scale(dpr, dpr);
 
-    const engine = new GameEngine(inputManager.state);
+    const engine = new GameEngine(inputManager.state, audioManager);
     let rafId = 0;
     let lastTime = performance.now();
     let accumulator = 0;
@@ -42,7 +54,7 @@ export default function GameShell() {
     rafId = requestAnimationFrame(frame);
 
     return () => cancelAnimationFrame(rafId);
-  }, [inputManager]);
+  }, [inputManager, audioManager]);
 
   return (
     <>

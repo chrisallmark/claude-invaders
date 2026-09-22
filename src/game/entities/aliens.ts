@@ -58,17 +58,19 @@ function aliveColumnBounds(formation: AlienFormation): { minCol: number; maxCol:
   return minCol === Infinity ? null : { minCol, maxCol };
 }
 
-export function updateAlienFormation(formation: AlienFormation, dtMs: number): void {
+// Returns true if a march step (and its accompanying sound/animation flip)
+// happened this call, so the engine can trigger the march sound in step.
+export function updateAlienFormation(formation: AlienFormation, dtMs: number): boolean {
   const totalCount = formation.aliens.length;
   const aliveCount = formation.aliens.reduce((count, alien) => count + (alien.alive ? 1 : 0), 0);
-  if (aliveCount === 0) return;
+  if (aliveCount === 0) return false;
 
   formation.marchTimer -= dtMs;
-  if (formation.marchTimer > 0) return;
+  if (formation.marchTimer > 0) return false;
   formation.marchTimer = marchIntervalMs(aliveCount, totalCount);
 
   const bounds = aliveColumnBounds(formation);
-  if (!bounds) return;
+  if (!bounds) return false;
 
   const spriteWidth = ALIEN_WIDTH * ALIEN_PIXEL_SIZE;
   const leftEdge = formation.originX + bounds.minCol * ALIEN_H_SPACING;
@@ -87,6 +89,8 @@ export function updateAlienFormation(formation: AlienFormation, dtMs: number): v
   for (const alien of formation.aliens) {
     if (alien.alive) alien.frame = alien.frame === 0 ? 1 : 0;
   }
+
+  return true;
 }
 
 export function alienScreenPosition(formation: AlienFormation, alien: Alien): { x: number; y: number } {
