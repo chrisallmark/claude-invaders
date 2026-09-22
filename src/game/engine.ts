@@ -73,6 +73,7 @@ export class GameEngine {
   private alienFireTimer = 0;
   private ufoSpawnTimer = 0;
   private shotsFired = 0;
+  private awaitingFireRelease = false;
 
   constructor(input: InputState, audio: AudioManager) {
     this.input = input;
@@ -93,12 +94,17 @@ export class GameEngine {
     this.alienFireTimer = randomBetween(ALIEN_FIRE_INTERVAL_MIN_MS, ALIEN_FIRE_INTERVAL_MAX_MS);
     this.ufoSpawnTimer = randomBetween(UFO_SPAWN_INTERVAL_MIN_MS, UFO_SPAWN_INTERVAL_MAX_MS);
     this.shotsFired = 0;
+    this.awaitingFireRelease = false;
     this.audio.stopUfoLoop();
   }
 
   update(dtMs: number): void {
     if (this.state === "attract") {
-      if (this.input.fire) this.state = "playing";
+      if (this.input.fire) {
+        this.state = "playing";
+        // The same press that started the game shouldn't also fire a shot.
+        this.awaitingFireRelease = true;
+      }
       return;
     }
 
@@ -117,7 +123,9 @@ export class GameEngine {
       }
     } else {
       updatePlayer(this.player, this.input, dtMs);
-      if (this.input.fire && spawnPlayerBullet(this.playerBullets, this.player)) {
+      if (this.awaitingFireRelease) {
+        if (!this.input.fire) this.awaitingFireRelease = false;
+      } else if (this.input.fire && spawnPlayerBullet(this.playerBullets, this.player)) {
         this.shotsFired += 1;
         this.audio.playOneShot("shoot");
       }
