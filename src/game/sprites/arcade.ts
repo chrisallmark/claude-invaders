@@ -27,6 +27,15 @@ export const BUNKER_TEMPLATE: Bitmap = parseBitmap([
   "#.......#",
 ]);
 
+export const UFO_SHIP: Bitmap = parseBitmap([
+  "...####...",
+  ".########.",
+  "##########",
+  "#.#.#.#.#.",
+  ".########.",
+  "..##..##..",
+]);
+
 export const GLYPH_WIDTH = 5;
 export const GLYPH_HEIGHT = 7;
 

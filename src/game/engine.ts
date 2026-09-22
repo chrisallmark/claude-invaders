@@ -8,6 +8,8 @@ import {
   COLORS,
   RESPAWN_PAUSE_MS,
   SCORE_BY_TIER,
+  UFO_SPAWN_INTERVAL_MAX_MS,
+  UFO_SPAWN_INTERVAL_MIN_MS,
 } from "@/game/constants";
 import {
   alienRect,
@@ -28,9 +30,10 @@ import {
 } from "@/game/entities/bullets";
 import { bunkerRect, createBunkers, damageBunkerAt, drawBunkers } from "@/game/entities/bunkers";
 import { createPlayer, drawPlayer, playerRect, respawnPlayer, updatePlayer } from "@/game/entities/player";
+import { createUfo, drawUfo, randomUfoBonus, spawnUfo, ufoRect, updateUfo } from "@/game/entities/ufo";
 import { ALIEN_HEIGHT, ALIEN_WIDTH } from "@/game/sprites/claudeAliens";
 import { drawGameOverOverlay, drawHud } from "@/game/hud";
-import type { Bullet, Bunker, InputState, Player } from "@/game/types";
+import type { Bullet, Bunker, InputState, Player, Ufo } from "@/game/types";
 
 const PLAYER_BULLET_POOL_SIZE = 1;
 const ALIEN_BULLET_POOL_SIZE = 3;
@@ -46,8 +49,10 @@ export class GameEngine {
   private readonly alienBullets: Bullet[];
   private readonly aliens: AlienFormation;
   private readonly bunkers: Bunker[];
+  private readonly ufo: Ufo;
   private score = 0;
   private alienFireTimer = randomBetween(ALIEN_FIRE_INTERVAL_MIN_MS, ALIEN_FIRE_INTERVAL_MAX_MS);
+  private ufoSpawnTimer = randomBetween(UFO_SPAWN_INTERVAL_MIN_MS, UFO_SPAWN_INTERVAL_MAX_MS);
 
   constructor(input: InputState) {
     this.input = input;
@@ -56,6 +61,7 @@ export class GameEngine {
     this.alienBullets = createBulletPool(ALIEN_BULLET_POOL_SIZE);
     this.aliens = createAlienFormation();
     this.bunkers = createBunkers();
+    this.ufo = createUfo();
   }
 
   update(dtMs: number): void {
@@ -76,6 +82,7 @@ export class GameEngine {
     updateBullets(this.playerBullets, dtMs);
     updateBullets(this.alienBullets, dtMs);
     updateAlienFormation(this.aliens, dtMs);
+    updateUfo(this.ufo, dtMs);
 
     this.alienFireTimer -= dtMs;
     if (this.alienFireTimer <= 0) {
@@ -83,10 +90,19 @@ export class GameEngine {
       this.alienFireTimer = randomBetween(ALIEN_FIRE_INTERVAL_MIN_MS, ALIEN_FIRE_INTERVAL_MAX_MS);
     }
 
+    if (!this.ufo.active) {
+      this.ufoSpawnTimer -= dtMs;
+      if (this.ufoSpawnTimer <= 0) {
+        spawnUfo(this.ufo);
+        this.ufoSpawnTimer = randomBetween(UFO_SPAWN_INTERVAL_MIN_MS, UFO_SPAWN_INTERVAL_MAX_MS);
+      }
+    }
+
     this.handleBunkerCollisions(this.playerBullets);
     this.handleBunkerCollisions(this.alienBullets);
     this.handlePlayerBulletCollisions();
     this.handleAlienBulletCollisions();
+    this.handleUfoCollisions();
   }
 
   private handleBunkerCollisions(bullets: Bullet[]): void {
@@ -144,10 +160,25 @@ export class GameEngine {
     }
   }
 
+  private handleUfoCollisions(): void {
+    if (!this.ufo.active) return;
+    const uRect = ufoRect(this.ufo);
+    for (const bullet of this.playerBullets) {
+      if (!bullet.active) continue;
+      if (aabbOverlap(bulletRect(bullet), uRect)) {
+        bullet.active = false;
+        this.ufo.active = false;
+        this.score += randomUfoBonus();
+        break;
+      }
+    }
+  }
+
   draw(ctx: CanvasRenderingContext2D): void {
     ctx.fillStyle = COLORS.black;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
+    drawUfo(ctx, this.ufo);
     drawBunkers(ctx, this.bunkers);
 
     if (this.player.alive) {

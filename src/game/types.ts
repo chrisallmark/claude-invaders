@@ -41,3 +41,10 @@ export type Bunker = {
   originY: number;
   pixels: BunkerCell[][];
 };
+
+export type Ufo = {
+  x: number;
+  y: number;
+  active: boolean;
+  direction: 1 | -1;
+};

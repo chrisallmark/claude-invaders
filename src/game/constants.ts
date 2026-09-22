@@ -8,6 +8,7 @@ export const COLORS = {
   green: "#33ff33",
   white: "#ffffff",
   coral: "#d97757",
+  red: "#ff5555",
 } as const;
 
 export const FIXED_STEP_MS = 1000 / 60;
@@ -31,8 +32,15 @@ export const ALIEN_H_SPACING = 18; // logical px between alien origins, horizont
 export const ALIEN_V_SPACING = 18; // logical px between alien origins, vertically
 export const ALIEN_STEP_DISTANCE = 4; // logical px moved per march step
 export const ALIEN_DROP_DISTANCE = 8; // logical px dropped when the formation hits an edge
-export const ALIEN_TOP_MARGIN = 46;
+export const ALIEN_TOP_MARGIN = 64; // leaves room for the UFO row above the formation
 export const ALIEN_SIDE_MARGIN = 8;
+
+export const UFO_PIXEL_SIZE = 2;
+export const UFO_SPEED = 40; // logical px/sec
+export const UFO_Y = 44;
+export const UFO_SPAWN_INTERVAL_MIN_MS = 8000;
+export const UFO_SPAWN_INTERVAL_MAX_MS = 15000;
+export const UFO_BONUS_VALUES = [50, 100, 150, 300] as const;
 
 export const SCORE_BY_TIER: Record<AlienTier, number> = {
   0: 30,
