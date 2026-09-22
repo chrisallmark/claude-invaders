@@ -11,8 +11,9 @@ import {
   CANVAS_WIDTH,
   COLORS,
 } from "@/game/constants";
+import type { Rect } from "@/game/collision";
 import { drawSprite } from "@/game/sprites";
-import { ALIEN_SPRITES, ALIEN_WIDTH } from "@/game/sprites/claudeAliens";
+import { ALIEN_HEIGHT, ALIEN_SPRITES, ALIEN_WIDTH } from "@/game/sprites/claudeAliens";
 import type { Alien, AlienTier } from "@/game/types";
 import { marchIntervalMs } from "@/game/waves";
 
@@ -88,11 +89,34 @@ export function updateAlienFormation(formation: AlienFormation, dtMs: number): v
   }
 }
 
+export function alienScreenPosition(formation: AlienFormation, alien: Alien): { x: number; y: number } {
+  return {
+    x: formation.originX + alien.col * ALIEN_H_SPACING,
+    y: formation.originY + alien.row * ALIEN_V_SPACING,
+  };
+}
+
+export function alienRect(formation: AlienFormation, alien: Alien): Rect {
+  const { x, y } = alienScreenPosition(formation, alien);
+  return { x, y, width: ALIEN_WIDTH * ALIEN_PIXEL_SIZE, height: ALIEN_HEIGHT * ALIEN_PIXEL_SIZE };
+}
+
+// The bottom-most alive alien in each column is the only one allowed to
+// fire, matching the classic arcade rule.
+export function getFiringAliens(formation: AlienFormation): Alien[] {
+  const bottomByCol = new Map<number, Alien>();
+  for (const alien of formation.aliens) {
+    if (!alien.alive) continue;
+    const current = bottomByCol.get(alien.col);
+    if (!current || alien.row > current.row) bottomByCol.set(alien.col, alien);
+  }
+  return [...bottomByCol.values()];
+}
+
 export function drawAlienFormation(ctx: CanvasRenderingContext2D, formation: AlienFormation): void {
   for (const alien of formation.aliens) {
     if (!alien.alive) continue;
-    const x = formation.originX + alien.col * ALIEN_H_SPACING;
-    const y = formation.originY + alien.row * ALIEN_V_SPACING;
+    const { x, y } = alienScreenPosition(formation, alien);
     const sprite = ALIEN_SPRITES[alien.tier][alien.frame];
     drawSprite(ctx, sprite, x, y, ALIEN_PIXEL_SIZE, ["transparent", COLORS.coral]);
   }

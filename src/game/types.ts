@@ -11,6 +11,9 @@ export type Player = {
   x: number;
   y: number;
   width: number;
+  lives: number;
+  alive: boolean;
+  respawnTimer: number;
 };
 
 export type Bullet = {

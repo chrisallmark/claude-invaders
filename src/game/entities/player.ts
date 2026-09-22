@@ -1,4 +1,5 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, PLAYER_PIXEL_SIZE, PLAYER_SPEED } from "@/game/constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, PLAYER_LIVES, PLAYER_PIXEL_SIZE, PLAYER_SPEED } from "@/game/constants";
+import type { Rect } from "@/game/collision";
 import { drawSprite } from "@/game/sprites";
 import { PLAYER_SHIP } from "@/game/sprites/arcade";
 import type { InputState, Player } from "@/game/types";
@@ -12,7 +13,15 @@ export function createPlayer(): Player {
     x: (CANVAS_WIDTH - PLAYER_WIDTH) / 2,
     y: PLAYER_Y,
     width: PLAYER_WIDTH,
+    lives: PLAYER_LIVES,
+    alive: true,
+    respawnTimer: 0,
   };
+}
+
+export function respawnPlayer(player: Player): void {
+  player.alive = true;
+  player.x = (CANVAS_WIDTH - player.width) / 2;
 }
 
 export function updatePlayer(player: Player, input: InputState, dtMs: number): void {
@@ -20,6 +29,10 @@ export function updatePlayer(player: Player, input: InputState, dtMs: number): v
   if (input.left) player.x -= distance;
   if (input.right) player.x += distance;
   player.x = Math.min(Math.max(player.x, 0), CANVAS_WIDTH - player.width);
+}
+
+export function playerRect(player: Player): Rect {
+  return { x: player.x, y: player.y, width: player.width, height: PLAYER_HEIGHT };
 }
 
 export function drawPlayer(ctx: CanvasRenderingContext2D, player: Player): void {
