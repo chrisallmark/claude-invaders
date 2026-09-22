@@ -7,6 +7,20 @@ import { GameEngine } from "@/game/engine";
 import { InputManager } from "@/game/input";
 import TouchControls from "@/components/TouchControls";
 
+// The bezel background image and where the game screen sits within it, all
+// measured against the image's native pixel dimensions so the overlay stays
+// correctly positioned/scaled however large the image renders on screen.
+const BEZEL_IMAGE_SIZE = 4000;
+const BEZEL_SCREEN_TOP = 1460;
+const BEZEL_SCREEN_WIDTH = 1796;
+const BEZEL_SCREEN_HEIGHT = 2052;
+const BEZEL_SCREEN_LEFT = (BEZEL_IMAGE_SIZE - BEZEL_SCREEN_WIDTH) / 2;
+
+const screenTopPct = `${(BEZEL_SCREEN_TOP / BEZEL_IMAGE_SIZE) * 100}%`;
+const screenLeftPct = `${(BEZEL_SCREEN_LEFT / BEZEL_IMAGE_SIZE) * 100}%`;
+const screenWidthPct = `${(BEZEL_SCREEN_WIDTH / BEZEL_IMAGE_SIZE) * 100}%`;
+const screenHeightPct = `${(BEZEL_SCREEN_HEIGHT / BEZEL_IMAGE_SIZE) * 100}%`;
+
 export default function GameShell() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [inputManager] = useState(() => new InputManager());
@@ -65,17 +79,26 @@ export default function GameShell() {
 
   return (
     <>
-      <canvas
-        ref={canvasRef}
-        style={{
-          aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`,
-          maxWidth: "100vw",
-          maxHeight: "100vh",
-          width: "auto",
-          height: "auto",
-          imageRendering: "pixelated",
-        }}
-      />
+      <div style={{ position: "relative", height: "100vh", display: "inline-block" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- fixed decorative background, no responsive srcset needed */}
+        <img
+          src="/images/claude-invaders.png"
+          alt=""
+          draggable={false}
+          style={{ height: "100%", width: "auto", display: "block", pointerEvents: "none", userSelect: "none" }}
+        />
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: "absolute",
+            top: screenTopPct,
+            left: screenLeftPct,
+            width: screenWidthPct,
+            height: screenHeightPct,
+            imageRendering: "pixelated",
+          }}
+        />
+      </div>
       <TouchControls inputManager={inputManager} />
     </>
   );

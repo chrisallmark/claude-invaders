@@ -67,7 +67,7 @@ export function drawAttractScreen(ctx: CanvasRenderingContext2D): void {
   drawScoreTableRow(ctx, 86, UFO_SHIP, COLORS.red, "= ? MYSTERY", COLORS.white);
   drawScoreTableRow(ctx, 100, ALIEN_SPRITES[0][0], COLORS.coral, "= 30 POINTS", COLORS.white);
   drawScoreTableRow(ctx, 114, ALIEN_SPRITES[1][0], COLORS.coral, "= 20 POINTS", COLORS.white);
-  drawScoreTableRow(ctx, 128, ALIEN_SPRITES[2][0], COLORS.green, "= 10 POINTS", COLORS.green);
+  drawScoreTableRow(ctx, 128, ALIEN_SPRITES[2][0], COLORS.coral, "= 10 POINTS", COLORS.white);
 
   drawCentered(ctx, "PRESS FIRE TO START", CANVAS_HEIGHT - 20, 1, COLORS.white);
 }

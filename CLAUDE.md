@@ -18,7 +18,7 @@ A browser recreation of Space Invaders (Next.js App Router + TypeScript) with Cl
 - `GameEngine` states: `attract` (title/high-score screen, also the audio-unlock gesture) → `playing` → `gameover` (frozen final frame + prompt) → back to `attract`.
 - Module layout:
   - `src/game/{constants,types}.ts` — shared tuning knobs and data shapes.
-  - `src/game/{engine,collision,waves,input,audio,storage,hud,crt}.ts` — orchestration and cross-cutting systems.
+  - `src/game/{engine,collision,waves,input,audio,storage,hud}.ts` — orchestration and cross-cutting systems.
   - `src/game/entities/{player,aliens,bullets,bunkers,ufo}.ts` — per-entity state, update, and draw logic.
   - `src/game/sprites/{index,arcade,claudeAliens}.ts` — bitmap sprite/font definitions and the `drawSprite`/`drawText` helpers.
   - `src/components/{GameShell,TouchControls}.tsx` — the React shell.

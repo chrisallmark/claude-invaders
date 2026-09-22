@@ -38,7 +38,6 @@ import { drawExplosions, spawnExplosion, updateExplosions } from "@/game/entitie
 import { createPlayer, drawPlayer, PLAYER_HEIGHT, playerRect, PLAYER_Y, respawnPlayer, updatePlayer } from "@/game/entities/player";
 import { createUfo, drawUfo, spawnUfo, ufoRect, ufoScoreForShotCount, updateUfo } from "@/game/entities/ufo";
 import { ALIEN_HEIGHT, ALIEN_WIDTH } from "@/game/sprites/claudeAliens";
-import { drawCrtOverlay } from "@/game/crt";
 import { drawAttractScreen, drawGameOverOverlay, drawHud } from "@/game/hud";
 import { loadHighScore, saveHighScoreIfBeaten } from "@/game/storage";
 import type { Bullet, Bunker, Explosion, InputState, Player, Ufo } from "@/game/types";
@@ -277,12 +276,10 @@ export class GameEngine {
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
-    ctx.fillStyle = COLORS.black;
-    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     if (this.state === "attract") {
       drawAttractScreen(ctx);
-      drawCrtOverlay(ctx);
       return;
     }
 
@@ -302,6 +299,5 @@ export class GameEngine {
       drawGameOverOverlay(ctx);
     }
 
-    drawCrtOverlay(ctx);
   }
 }

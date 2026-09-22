@@ -1,6 +1,6 @@
 # Claude Invaders
 
-A browser recreation of the classic 1978 arcade game **Space Invaders**, built with Next.js and TypeScript, where the alien sprites are redesigned as Claude-branded pixel-art characters. The rest of the game — player cannon, mystery UFO, destructible bunkers, HUD, and the monochrome/green CRT look — stays faithful to the original arcade's proportions and feel.
+A browser recreation of the classic 1978 arcade game **Space Invaders**, built with Next.js and TypeScript, where the alien sprites are redesigned as Claude-branded pixel-art characters. The rest of the game — player cannon, mystery UFO, destructible bunkers, and HUD — stays faithful to the original arcade's proportions and feel, rendered as a transparent overlay on top of a Claude-themed cabinet bezel background.
 
 Everything is rendered on a single `<canvas>` from hand-authored pixel bitmaps defined in code — there are no image assets.
 
