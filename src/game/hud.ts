@@ -18,9 +18,20 @@ export function drawHud(ctx: CanvasRenderingContext2D, score: number, lives: num
   drawText(ctx, livesValue, CANVAS_WIDTH - HUD_MARGIN - livesValueWidth, HUD_VALUE_Y, HUD_PIXEL_SIZE, COLORS.green, FONT, GLYPH_WIDTH);
 }
 
-export function drawGameOverOverlay(ctx: CanvasRenderingContext2D): void {
-  const pixelSize = 3;
-  const text = "GAME OVER";
+function drawCentered(ctx: CanvasRenderingContext2D, text: string, y: number, pixelSize: number, color: string): void {
   const width = textWidth(text, GLYPH_WIDTH, pixelSize);
-  drawText(ctx, text, (CANVAS_WIDTH - width) / 2, CANVAS_HEIGHT / 2 - 20, pixelSize, COLORS.coral, FONT, GLYPH_WIDTH);
+  drawText(ctx, text, (CANVAS_WIDTH - width) / 2, y, pixelSize, color, FONT, GLYPH_WIDTH);
+}
+
+export function drawGameOverOverlay(ctx: CanvasRenderingContext2D): void {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
+  ctx.fillRect(0, CANVAS_HEIGHT / 2 - 30, CANVAS_WIDTH, 70);
+
+  drawCentered(ctx, "GAME OVER", CANVAS_HEIGHT / 2 - 20, 3, COLORS.coral);
+  drawCentered(ctx, "PRESS FIRE TO CONTINUE", CANVAS_HEIGHT / 2 + 20, 1, COLORS.white);
+}
+
+export function drawAttractScreen(ctx: CanvasRenderingContext2D): void {
+  drawCentered(ctx, "CLAUDE INVADERS", CANVAS_HEIGHT / 2 - 40, 2, COLORS.coral);
+  drawCentered(ctx, "PRESS FIRE TO START", CANVAS_HEIGHT / 2, 1, COLORS.white);
 }

@@ -19,6 +19,9 @@ import {
   createAlienFormation,
   drawAlienFormation,
   getFiringAliens,
+  hasFormationReachedLimit,
+  isWaveCleared,
+  startNextWave,
   updateAlienFormation,
   type AlienFormation,
 } from "@/game/entities/aliens";
@@ -31,14 +34,21 @@ import {
   updateBullets,
 } from "@/game/entities/bullets";
 import { bunkerRect, createBunkers, damageBunkerAt, drawBunkers } from "@/game/entities/bunkers";
-import { createPlayer, drawPlayer, playerRect, respawnPlayer, updatePlayer } from "@/game/entities/player";
+import { createPlayer, drawPlayer, playerRect, PLAYER_Y, respawnPlayer, updatePlayer } from "@/game/entities/player";
 import { createUfo, drawUfo, randomUfoBonus, spawnUfo, ufoRect, updateUfo } from "@/game/entities/ufo";
 import { ALIEN_HEIGHT, ALIEN_WIDTH } from "@/game/sprites/claudeAliens";
-import { drawGameOverOverlay, drawHud } from "@/game/hud";
+import { drawAttractScreen, drawGameOverOverlay, drawHud } from "@/game/hud";
 import type { Bullet, Bunker, InputState, Player, Ufo } from "@/game/types";
 
 const PLAYER_BULLET_POOL_SIZE = 1;
 const ALIEN_BULLET_POOL_SIZE = 3;
+
+// Classic loss condition: the formation reaches the player's row (not the
+// bunkers — aliens march straight through/over the shields, same as the
+// original arcade).
+const LOSS_LIMIT_Y = PLAYER_Y;
+
+type EngineState = "attract" | "playing" | "gameover";
 
 function randomBetween(min: number, max: number): number {
   return min + Math.random() * (max - min);
@@ -47,30 +57,51 @@ function randomBetween(min: number, max: number): number {
 export class GameEngine {
   private readonly input: InputState;
   private readonly audio: AudioManager;
-  private readonly player: Player;
-  private readonly playerBullets: Bullet[];
-  private readonly alienBullets: Bullet[];
-  private readonly aliens: AlienFormation;
-  private readonly bunkers: Bunker[];
-  private readonly ufo: Ufo;
+  private state: EngineState = "attract";
+  private player!: Player;
+  private playerBullets!: Bullet[];
+  private alienBullets!: Bullet[];
+  private aliens!: AlienFormation;
+  private bunkers!: Bunker[];
+  private ufo!: Ufo;
   private score = 0;
   private extendPlayAwarded = false;
-  private alienFireTimer = randomBetween(ALIEN_FIRE_INTERVAL_MIN_MS, ALIEN_FIRE_INTERVAL_MAX_MS);
-  private ufoSpawnTimer = randomBetween(UFO_SPAWN_INTERVAL_MIN_MS, UFO_SPAWN_INTERVAL_MAX_MS);
+  private alienFireTimer = 0;
+  private ufoSpawnTimer = 0;
 
   constructor(input: InputState, audio: AudioManager) {
     this.input = input;
     this.audio = audio;
+    this.resetEntities();
+  }
+
+  private resetEntities(): void {
     this.player = createPlayer();
     this.playerBullets = createBulletPool(PLAYER_BULLET_POOL_SIZE);
     this.alienBullets = createBulletPool(ALIEN_BULLET_POOL_SIZE);
     this.aliens = createAlienFormation();
     this.bunkers = createBunkers();
     this.ufo = createUfo();
+    this.score = 0;
+    this.extendPlayAwarded = false;
+    this.alienFireTimer = randomBetween(ALIEN_FIRE_INTERVAL_MIN_MS, ALIEN_FIRE_INTERVAL_MAX_MS);
+    this.ufoSpawnTimer = randomBetween(UFO_SPAWN_INTERVAL_MIN_MS, UFO_SPAWN_INTERVAL_MAX_MS);
+    this.audio.stopUfoLoop();
   }
 
   update(dtMs: number): void {
-    if (this.player.lives <= 0) return;
+    if (this.state === "attract") {
+      if (this.input.fire) this.state = "playing";
+      return;
+    }
+
+    if (this.state === "gameover") {
+      if (this.input.fire) {
+        this.resetEntities();
+        this.state = "attract";
+      }
+      return;
+    }
 
     if (!this.player.alive) {
       this.player.respawnTimer -= dtMs;
@@ -117,6 +148,15 @@ export class GameEngine {
     this.handleAlienBulletCollisions();
     this.handleUfoCollisions();
     this.checkExtendPlay();
+
+    if (this.player.lives <= 0 || hasFormationReachedLimit(this.aliens, LOSS_LIMIT_Y)) {
+      this.state = "gameover";
+      return;
+    }
+
+    if (isWaveCleared(this.aliens)) {
+      startNextWave(this.aliens);
+    }
   }
 
   private checkExtendPlay(): void {
@@ -203,6 +243,11 @@ export class GameEngine {
     ctx.fillStyle = COLORS.black;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
+    if (this.state === "attract") {
+      drawAttractScreen(ctx);
+      return;
+    }
+
     drawUfo(ctx, this.ufo);
     drawBunkers(ctx, this.bunkers);
 
@@ -214,7 +259,7 @@ export class GameEngine {
     drawAlienFormation(ctx, this.aliens);
     drawHud(ctx, this.score, this.player.lives);
 
-    if (this.player.lives <= 0) {
+    if (this.state === "gameover") {
       drawGameOverOverlay(ctx);
     }
   }

@@ -40,9 +40,13 @@ export default function GameShell() {
     let rafId = 0;
     let lastTime = performance.now();
     let accumulator = 0;
+    // Caps how much simulated time a single real frame can catch up on, so a
+    // backgrounded tab or a slow first frame can't dump a huge backlog of
+    // ticks into the game logic all at once (a "spiral of death").
+    const MAX_FRAME_DELTA_MS = 250;
 
     const frame = (now: number) => {
-      accumulator += now - lastTime;
+      accumulator += Math.min(now - lastTime, MAX_FRAME_DELTA_MS);
       lastTime = now;
       while (accumulator >= FIXED_STEP_MS) {
         engine.update(FIXED_STEP_MS);

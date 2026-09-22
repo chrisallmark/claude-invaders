@@ -23,6 +23,7 @@ export type AlienFormation = {
   originY: number;
   direction: 1 | -1;
   marchTimer: number;
+  waveNumber: number;
 };
 
 function tierForRow(row: number): AlienTier {
@@ -31,20 +32,54 @@ function tierForRow(row: number): AlienTier {
   return 2;
 }
 
-export function createAlienFormation(): AlienFormation {
+function buildAlienGrid(): Alien[] {
   const aliens: Alien[] = [];
   for (let row = 0; row < ALIEN_ROWS; row++) {
     for (let col = 0; col < ALIEN_COLS; col++) {
       aliens.push({ row, col, tier: tierForRow(row), alive: true, frame: 0 });
     }
   }
+  return aliens;
+}
+
+export function createAlienFormation(waveNumber = 1): AlienFormation {
+  const aliens = buildAlienGrid();
   return {
     aliens,
     originX: ALIEN_SIDE_MARGIN,
     originY: ALIEN_TOP_MARGIN,
     direction: 1,
-    marchTimer: marchIntervalMs(aliens.length, aliens.length),
+    marchTimer: marchIntervalMs(aliens.length, aliens.length, waveNumber),
+    waveNumber,
   };
+}
+
+export function isWaveCleared(formation: AlienFormation): boolean {
+  return formation.aliens.every((alien) => !alien.alive);
+}
+
+// Reseeds the formation in place for the next wave, matching the classic
+// "clearing a wave spawns a faster new one" behavior.
+export function startNextWave(formation: AlienFormation): void {
+  const waveNumber = formation.waveNumber + 1;
+  const aliens = buildAlienGrid();
+  formation.aliens = aliens;
+  formation.originX = ALIEN_SIDE_MARGIN;
+  formation.originY = ALIEN_TOP_MARGIN;
+  formation.direction = 1;
+  formation.waveNumber = waveNumber;
+  formation.marchTimer = marchIntervalMs(aliens.length, aliens.length, waveNumber);
+}
+
+// Classic loss condition: the formation reaches the player/bunker line.
+export function hasFormationReachedLimit(formation: AlienFormation, limitY: number): boolean {
+  const spriteHeight = ALIEN_HEIGHT * ALIEN_PIXEL_SIZE;
+  for (const alien of formation.aliens) {
+    if (!alien.alive) continue;
+    const { y } = alienScreenPosition(formation, alien);
+    if (y + spriteHeight >= limitY) return true;
+  }
+  return false;
 }
 
 function aliveColumnBounds(formation: AlienFormation): { minCol: number; maxCol: number } | null {
@@ -67,7 +102,7 @@ export function updateAlienFormation(formation: AlienFormation, dtMs: number): b
 
   formation.marchTimer -= dtMs;
   if (formation.marchTimer > 0) return false;
-  formation.marchTimer = marchIntervalMs(aliveCount, totalCount);
+  formation.marchTimer = marchIntervalMs(aliveCount, totalCount, formation.waveNumber);
 
   const bounds = aliveColumnBounds(formation);
   if (!bounds) return false;
