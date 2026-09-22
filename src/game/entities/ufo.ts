@@ -1,4 +1,4 @@
-import { CANVAS_WIDTH, COLORS, UFO_BONUS_VALUES, UFO_PIXEL_SIZE, UFO_SPEED, UFO_Y } from "@/game/constants";
+import { CANVAS_WIDTH, COLORS, UFO_PIXEL_SIZE, UFO_SCORE_TABLE, UFO_SPEED, UFO_Y } from "@/game/constants";
 import type { Rect } from "@/game/collision";
 import { drawSprite } from "@/game/sprites";
 import { UFO_SHIP } from "@/game/sprites/arcade";
@@ -30,8 +30,11 @@ export function ufoRect(ufo: Ufo): Rect {
   return { x: ufo.x, y: ufo.y, width: UFO_WIDTH * UFO_PIXEL_SIZE, height: UFO_HEIGHT * UFO_PIXEL_SIZE };
 }
 
-export function randomUfoBonus(): number {
-  return UFO_BONUS_VALUES[Math.floor(Math.random() * UFO_BONUS_VALUES.length)];
+// shotCount is the 1-based count of the shot that just hit the UFO (the
+// Nth shot fired this wave maps to slot N-1, wrapping every 15 shots).
+export function ufoScoreForShotCount(shotCount: number): number {
+  const index = (shotCount - 1) % UFO_SCORE_TABLE.length;
+  return UFO_SCORE_TABLE[index];
 }
 
 export function drawUfo(ctx: CanvasRenderingContext2D, ufo: Ufo): void {

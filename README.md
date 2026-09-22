@@ -16,7 +16,7 @@ Press fire on the title screen to start. On game over, press fire again to retur
 ## Gameplay
 
 - Classic wave loop: a 5×11 grid of aliens marches in lock-step, speeding up as fewer remain and dropping a row closer each time it hits a screen edge. Clearing a wave spawns a new, faster one.
-- 3 destructible bunkers erode where they're hit (by either side) and let bullets tunnel through existing holes.
+- 4 destructible bunkers erode where they're hit (by either side, or by aliens marching through them) and let bullets tunnel through existing holes.
 - A mystery UFO crosses the top periodically for a random bonus (50/100/150/300 points).
 - 3 lives, a bonus life at 1500 points, and a persisted high score (stored in your browser's `localStorage`).
 - Game over when you run out of lives or the alien formation reaches your row.

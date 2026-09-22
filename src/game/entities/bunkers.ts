@@ -52,6 +52,28 @@ export function damageBunkerAt(bunker: Bunker, x: number, y: number): boolean {
   return true;
 }
 
+// Clears every still-solid bunker cell that falls under `rect` (a moving
+// alien's bounding box, typically), so the shield erodes layer by layer as
+// the alien formation marches down through it. Returns true if any cell
+// was actually cleared.
+export function eraseBunkerOverlap(bunker: Bunker, rect: Rect): boolean {
+  const localLeft = Math.max(0, Math.floor((rect.x - bunker.originX) / BUNKER_PIXEL_SIZE));
+  const localRight = Math.min(BUNKER_WIDTH - 1, Math.ceil((rect.x + rect.width - bunker.originX) / BUNKER_PIXEL_SIZE) - 1);
+  const localTop = Math.max(0, Math.floor((rect.y - bunker.originY) / BUNKER_PIXEL_SIZE));
+  const localBottom = Math.min(BUNKER_HEIGHT - 1, Math.ceil((rect.y + rect.height - bunker.originY) / BUNKER_PIXEL_SIZE) - 1);
+
+  let erased = false;
+  for (let r = localTop; r <= localBottom; r++) {
+    for (let c = localLeft; c <= localRight; c++) {
+      if (bunker.pixels[r][c] !== 0) {
+        bunker.pixels[r][c] = 0;
+        erased = true;
+      }
+    }
+  }
+  return erased;
+}
+
 export function drawBunkers(ctx: CanvasRenderingContext2D, bunkers: Bunker[]): void {
   for (const bunker of bunkers) {
     drawSprite(ctx, bunker.pixels, bunker.originX, bunker.originY, BUNKER_PIXEL_SIZE, ["transparent", COLORS.green]);

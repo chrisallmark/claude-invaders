@@ -30,11 +30,14 @@ export default function GameShell() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = CANVAS_WIDTH * dpr;
-    canvas.height = CANVAS_HEIGHT * dpr;
+    // Fixed 4x backing store (896x1024), rather than the runtime
+    // devicePixelRatio — that varies per display/zoom and can end up
+    // inconsistent, making every sprite pixel look chunkier than intended.
+    const BACKING_STORE_SCALE = 4;
+    canvas.width = CANVAS_WIDTH * BACKING_STORE_SCALE;
+    canvas.height = CANVAS_HEIGHT * BACKING_STORE_SCALE;
     ctx.imageSmoothingEnabled = false;
-    ctx.scale(dpr, dpr);
+    ctx.scale(BACKING_STORE_SCALE, BACKING_STORE_SCALE);
 
     const engine = new GameEngine(inputManager.state, audioManager);
     let rafId = 0;

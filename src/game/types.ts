@@ -48,3 +48,14 @@ export type Ufo = {
   active: boolean;
   direction: 1 | -1;
 };
+
+export type ExplosionKind = "player" | "ufo" | "alien";
+
+export type Explosion = {
+  x: number;
+  y: number;
+  kind: ExplosionKind;
+  age: number;
+  ttl: number;
+  label?: string; // e.g. the score value shown for a UFO kill
+};
