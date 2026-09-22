@@ -7,7 +7,7 @@ import type { Bunker, BunkerCell } from "@/game/types";
 
 const BUNKER_WIDTH = BUNKER_TEMPLATE[0].length;
 const BUNKER_HEIGHT = BUNKER_TEMPLATE.length;
-const BUNKER_Y = PLAYER_Y - BUNKER_HEIGHT * BUNKER_PIXEL_SIZE - BUNKER_PLAYER_GAP;
+export const BUNKER_Y = PLAYER_Y - BUNKER_HEIGHT * BUNKER_PIXEL_SIZE - BUNKER_PLAYER_GAP;
 
 function cloneTemplate(): BunkerCell[][] {
   return BUNKER_TEMPLATE.map((row) => row.map((cell) => cell as BunkerCell));

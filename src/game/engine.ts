@@ -10,10 +10,11 @@ import {
   EXTEND_PLAY_SCORE,
   RESPAWN_PAUSE_MS,
   SCORE_BY_TIER,
-  UFO_SPAWN_INTERVAL_MAX_MS,
-  UFO_SPAWN_INTERVAL_MIN_MS,
+  UFO_MIN_ALIVE_ALIENS,
+  UFO_SPAWN_INTERVAL_MS,
 } from "@/game/constants";
 import {
+  aliveAlienCount,
   alienRect,
   alienScreenPosition,
   createAlienFormation,
@@ -33,7 +34,7 @@ import {
   spawnPlayerBullet,
   updateBullets,
 } from "@/game/entities/bullets";
-import { bunkerRect, createBunkers, damageBunkerAt, drawBunkers, eraseBunkerOverlap } from "@/game/entities/bunkers";
+import { BUNKER_Y, bunkerRect, createBunkers, damageBunkerAt, drawBunkers, eraseBunkerOverlap } from "@/game/entities/bunkers";
 import { drawExplosions, spawnExplosion, updateExplosions } from "@/game/entities/explosions";
 import { createPlayer, drawPlayer, PLAYER_HEIGHT, playerRect, PLAYER_Y, respawnPlayer, updatePlayer } from "@/game/entities/player";
 import { createUfo, drawUfo, spawnUfo, ufoRect, ufoScoreForShotCount, updateUfo } from "@/game/entities/ufo";
@@ -92,7 +93,7 @@ export class GameEngine {
     this.score = 0;
     this.extendPlayAwarded = false;
     this.alienFireTimer = randomBetween(ALIEN_FIRE_INTERVAL_MIN_MS, ALIEN_FIRE_INTERVAL_MAX_MS);
-    this.ufoSpawnTimer = randomBetween(UFO_SPAWN_INTERVAL_MIN_MS, UFO_SPAWN_INTERVAL_MAX_MS);
+    this.ufoSpawnTimer = UFO_SPAWN_INTERVAL_MS;
     this.shotsFired = 0;
     this.awaitingFireRelease = false;
     this.audio.stopUfoLoop();
@@ -155,11 +156,16 @@ export class GameEngine {
     }
 
     if (!this.ufo.active) {
-      this.ufoSpawnTimer -= dtMs;
-      if (this.ufoSpawnTimer <= 0) {
-        spawnUfo(this.ufo);
-        this.audio.startUfoLoop();
-        this.ufoSpawnTimer = randomBetween(UFO_SPAWN_INTERVAL_MIN_MS, UFO_SPAWN_INTERVAL_MAX_MS);
+      const canSpawnUfo =
+        aliveAlienCount(this.aliens) >= UFO_MIN_ALIVE_ALIENS && !hasFormationReachedLimit(this.aliens, BUNKER_Y);
+      if (canSpawnUfo) {
+        this.ufoSpawnTimer -= dtMs;
+        if (this.ufoSpawnTimer <= 0) {
+          const direction: 1 | -1 = this.shotsFired % 2 === 0 ? 1 : -1;
+          spawnUfo(this.ufo, direction);
+          this.audio.startUfoLoop();
+          this.ufoSpawnTimer = UFO_SPAWN_INTERVAL_MS;
+        }
       }
     }
 

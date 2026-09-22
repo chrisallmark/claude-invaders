@@ -58,6 +58,10 @@ export function isWaveCleared(formation: AlienFormation): boolean {
   return formation.aliens.every((alien) => !alien.alive);
 }
 
+export function aliveAlienCount(formation: AlienFormation): number {
+  return formation.aliens.reduce((count, alien) => count + (alien.alive ? 1 : 0), 0);
+}
+
 // Reseeds the formation in place for the next wave, matching the classic
 // "clearing a wave spawns a faster new one" behavior.
 export function startNextWave(formation: AlienFormation): void {

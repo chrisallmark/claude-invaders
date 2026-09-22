@@ -39,8 +39,12 @@ export const ALIEN_SIDE_MARGIN = 8;
 export const UFO_PIXEL_SIZE = 1;
 export const UFO_SPEED = 40; // logical px/sec
 export const UFO_Y = 44;
-export const UFO_SPAWN_INTERVAL_MIN_MS = 8000;
-export const UFO_SPAWN_INTERVAL_MAX_MS = 15000;
+
+// Original arcade behavior: a deterministic 25.6s timer, not random, which
+// pauses (rather than resets) while too few aliens remain or the formation
+// has gotten dangerously close to the player.
+export const UFO_SPAWN_INTERVAL_MS = 25600;
+export const UFO_MIN_ALIVE_ALIENS = 8;
 
 // The original arcade ROM's mystery-ship bonus isn't random — it's a fixed
 // lookup table indexed by a per-wave running count of every shot the player

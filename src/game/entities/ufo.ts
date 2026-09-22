@@ -11,10 +11,10 @@ export function createUfo(): Ufo {
   return { x: -UFO_WIDTH * UFO_PIXEL_SIZE, y: UFO_Y, active: false, direction: 1 };
 }
 
-export function spawnUfo(ufo: Ufo): void {
+export function spawnUfo(ufo: Ufo, direction: 1 | -1): void {
   ufo.active = true;
-  ufo.direction = 1;
-  ufo.x = -UFO_WIDTH * UFO_PIXEL_SIZE;
+  ufo.direction = direction;
+  ufo.x = direction === 1 ? -UFO_WIDTH * UFO_PIXEL_SIZE : CANVAS_WIDTH;
 }
 
 export function updateUfo(ufo: Ufo, dtMs: number): void {
