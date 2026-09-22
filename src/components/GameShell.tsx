@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { CANVAS_WIDTH, CANVAS_HEIGHT, COLORS } from "@/game/constants";
-import { drawSprite, drawText, textWidth } from "@/game/sprites";
-import { PLAYER_SHIP, FONT, GLYPH_WIDTH } from "@/game/sprites/arcade";
+import { useEffect, useRef, useState } from "react";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, FIXED_STEP_MS } from "@/game/constants";
+import { GameEngine } from "@/game/engine";
+import { InputManager } from "@/game/input";
+import TouchControls from "@/components/TouchControls";
 
 export default function GameShell() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [inputManager] = useState(() => new InputManager());
+
+  useEffect(() => inputManager.attachKeyboard(), [inputManager]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -20,37 +24,40 @@ export default function GameShell() {
     ctx.imageSmoothingEnabled = false;
     ctx.scale(dpr, dpr);
 
-    ctx.fillStyle = COLORS.black;
-    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    const engine = new GameEngine(inputManager.state);
+    let rafId = 0;
+    let lastTime = performance.now();
+    let accumulator = 0;
 
-    const title = "CLAUDE INVADERS";
-    const titlePixelSize = 2;
-    const titleX = (CANVAS_WIDTH - textWidth(title, GLYPH_WIDTH, titlePixelSize)) / 2;
-    drawText(ctx, title, titleX, 60, titlePixelSize, COLORS.green, FONT, GLYPH_WIDTH);
+    const frame = (now: number) => {
+      accumulator += now - lastTime;
+      lastTime = now;
+      while (accumulator >= FIXED_STEP_MS) {
+        engine.update(FIXED_STEP_MS);
+        accumulator -= FIXED_STEP_MS;
+      }
+      engine.draw(ctx);
+      rafId = requestAnimationFrame(frame);
+    };
+    rafId = requestAnimationFrame(frame);
 
-    const shipPixelSize = 4;
-    const shipWidth = PLAYER_SHIP[0].length * shipPixelSize;
-    drawSprite(
-      ctx,
-      PLAYER_SHIP,
-      (CANVAS_WIDTH - shipWidth) / 2,
-      CANVAS_HEIGHT - 40,
-      shipPixelSize,
-      ["transparent", COLORS.green],
-    );
-  }, []);
+    return () => cancelAnimationFrame(rafId);
+  }, [inputManager]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`,
-        maxWidth: "100vw",
-        maxHeight: "100vh",
-        width: "auto",
-        height: "auto",
-        imageRendering: "pixelated",
-      }}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        style={{
+          aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`,
+          maxWidth: "100vw",
+          maxHeight: "100vh",
+          width: "auto",
+          height: "auto",
+          imageRendering: "pixelated",
+        }}
+      />
+      <TouchControls inputManager={inputManager} />
+    </>
   );
 }

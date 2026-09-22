@@ -12,13 +12,17 @@ export function drawSprite(
   pixelSize: number,
   palette: Palette,
 ): void {
+  // Snap to whole pixels first: fillRect anti-aliases fractional coordinates,
+  // which shows up as hairline seams between adjacent cells of the same sprite.
+  const originX = Math.round(x);
+  const originY = Math.round(y);
   for (let row = 0; row < bitmap.length; row++) {
     const cells = bitmap[row];
     for (let col = 0; col < cells.length; col++) {
       const value = cells[col];
       if (value === 0) continue;
       ctx.fillStyle = palette[value] ?? palette[1];
-      ctx.fillRect(x + col * pixelSize, y + row * pixelSize, pixelSize, pixelSize);
+      ctx.fillRect(originX + col * pixelSize, originY + row * pixelSize, pixelSize, pixelSize);
     }
   }
 }
