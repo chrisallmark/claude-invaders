@@ -1,11 +1,13 @@
-import { BUNKER_COUNT, BUNKER_PIXEL_SIZE, BUNKER_Y, CANVAS_WIDTH, COLORS } from "@/game/constants";
+import { BUNKER_COUNT, BUNKER_PIXEL_SIZE, BUNKER_PLAYER_GAP, CANVAS_WIDTH, COLORS } from "@/game/constants";
 import type { Rect } from "@/game/collision";
+import { PLAYER_Y } from "@/game/entities/player";
 import { drawSprite } from "@/game/sprites";
 import { BUNKER_TEMPLATE } from "@/game/sprites/arcade";
 import type { Bunker, BunkerCell } from "@/game/types";
 
 const BUNKER_WIDTH = BUNKER_TEMPLATE[0].length;
 const BUNKER_HEIGHT = BUNKER_TEMPLATE.length;
+const BUNKER_Y = PLAYER_Y - BUNKER_HEIGHT * BUNKER_PIXEL_SIZE - BUNKER_PLAYER_GAP;
 
 function cloneTemplate(): BunkerCell[][] {
   return BUNKER_TEMPLATE.map((row) => row.map((cell) => cell as BunkerCell));

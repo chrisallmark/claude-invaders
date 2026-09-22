@@ -1,4 +1,12 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, PLAYER_LIVES, PLAYER_PIXEL_SIZE, PLAYER_SPEED } from "@/game/constants";
+import {
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  COLORS,
+  PLAYER_LIVES,
+  PLAYER_PIXEL_SIZE,
+  PLAYER_SPEED,
+  SCREEN_EDGE_MARGIN,
+} from "@/game/constants";
 import type { Rect } from "@/game/collision";
 import { drawSprite } from "@/game/sprites";
 import { PLAYER_SHIP } from "@/game/sprites/arcade";
@@ -6,7 +14,7 @@ import type { InputState, Player } from "@/game/types";
 
 export const PLAYER_WIDTH = PLAYER_SHIP[0].length * PLAYER_PIXEL_SIZE;
 export const PLAYER_HEIGHT = PLAYER_SHIP.length * PLAYER_PIXEL_SIZE;
-export const PLAYER_Y = CANVAS_HEIGHT - PLAYER_HEIGHT - 16;
+export const PLAYER_Y = CANVAS_HEIGHT - PLAYER_HEIGHT - SCREEN_EDGE_MARGIN;
 
 export function createPlayer(): Player {
   return {

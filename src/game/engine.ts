@@ -37,7 +37,9 @@ import { bunkerRect, createBunkers, damageBunkerAt, drawBunkers } from "@/game/e
 import { createPlayer, drawPlayer, playerRect, PLAYER_Y, respawnPlayer, updatePlayer } from "@/game/entities/player";
 import { createUfo, drawUfo, randomUfoBonus, spawnUfo, ufoRect, updateUfo } from "@/game/entities/ufo";
 import { ALIEN_HEIGHT, ALIEN_WIDTH } from "@/game/sprites/claudeAliens";
+import { drawCrtOverlay } from "@/game/crt";
 import { drawAttractScreen, drawGameOverOverlay, drawHud } from "@/game/hud";
+import { loadHighScore, saveHighScoreIfBeaten } from "@/game/storage";
 import type { Bullet, Bunker, InputState, Player, Ufo } from "@/game/types";
 
 const PLAYER_BULLET_POOL_SIZE = 1;
@@ -65,6 +67,7 @@ export class GameEngine {
   private bunkers!: Bunker[];
   private ufo!: Ufo;
   private score = 0;
+  private highScore = loadHighScore();
   private extendPlayAwarded = false;
   private alienFireTimer = 0;
   private ufoSpawnTimer = 0;
@@ -151,6 +154,9 @@ export class GameEngine {
 
     if (this.player.lives <= 0 || hasFormationReachedLimit(this.aliens, LOSS_LIMIT_Y)) {
       this.state = "gameover";
+      if (saveHighScoreIfBeaten(this.score)) {
+        this.highScore = this.score;
+      }
       return;
     }
 
@@ -244,7 +250,8 @@ export class GameEngine {
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     if (this.state === "attract") {
-      drawAttractScreen(ctx);
+      drawAttractScreen(ctx, this.highScore);
+      drawCrtOverlay(ctx);
       return;
     }
 
@@ -262,5 +269,7 @@ export class GameEngine {
     if (this.state === "gameover") {
       drawGameOverOverlay(ctx);
     }
+
+    drawCrtOverlay(ctx);
   }
 }

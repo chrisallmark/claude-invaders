@@ -1,9 +1,9 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS } from "@/game/constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, SCREEN_EDGE_MARGIN } from "@/game/constants";
 import { drawText, textWidth } from "@/game/sprites";
 import { FONT, GLYPH_HEIGHT, GLYPH_WIDTH } from "@/game/sprites/arcade";
 
 const HUD_PIXEL_SIZE = 2;
-const HUD_MARGIN = 8;
+const HUD_MARGIN = SCREEN_EDGE_MARGIN;
 const HUD_VALUE_Y = HUD_MARGIN + (GLYPH_HEIGHT + 2) * HUD_PIXEL_SIZE;
 
 export function drawHud(ctx: CanvasRenderingContext2D, score: number, lives: number): void {
@@ -31,7 +31,9 @@ export function drawGameOverOverlay(ctx: CanvasRenderingContext2D): void {
   drawCentered(ctx, "PRESS FIRE TO CONTINUE", CANVAS_HEIGHT / 2 + 20, 1, COLORS.white);
 }
 
-export function drawAttractScreen(ctx: CanvasRenderingContext2D): void {
-  drawCentered(ctx, "CLAUDE INVADERS", CANVAS_HEIGHT / 2 - 40, 2, COLORS.coral);
-  drawCentered(ctx, "PRESS FIRE TO START", CANVAS_HEIGHT / 2, 1, COLORS.white);
+export function drawAttractScreen(ctx: CanvasRenderingContext2D, highScore: number): void {
+  drawCentered(ctx, "CLAUDE INVADERS", CANVAS_HEIGHT / 2 - 50, 2, COLORS.coral);
+  drawCentered(ctx, "HIGH SCORE", CANVAS_HEIGHT / 2 - 10, 1, COLORS.white);
+  drawCentered(ctx, String(highScore).padStart(4, "0"), CANVAS_HEIGHT / 2, 1, COLORS.green);
+  drawCentered(ctx, "PRESS FIRE TO START", CANVAS_HEIGHT / 2 + 20, 1, COLORS.white);
 }

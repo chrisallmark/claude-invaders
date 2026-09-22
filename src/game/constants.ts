@@ -2,6 +2,7 @@ import type { AlienTier } from "@/game/types";
 
 export const CANVAS_WIDTH = 224;
 export const CANVAS_HEIGHT = 256;
+export const SCREEN_EDGE_MARGIN = 8; // shared top (HUD) / bottom (player) margin
 
 export const COLORS = {
   black: "#000000",
@@ -52,4 +53,4 @@ export const EXTEND_PLAY_SCORE = 1500;
 
 export const BUNKER_COUNT = 3;
 export const BUNKER_PIXEL_SIZE = 3;
-export const BUNKER_Y = 170;
+export const BUNKER_PLAYER_GAP = 16; // logical px between the bunkers' bottom edge and the player's top edge
