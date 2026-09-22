@@ -39,3 +39,7 @@ export const SCORE_BY_TIER: Record<AlienTier, number> = {
   1: 20,
   2: 10,
 };
+
+export const BUNKER_COUNT = 3;
+export const BUNKER_PIXEL_SIZE = 4;
+export const BUNKER_Y = 170;

@@ -26,10 +26,11 @@ import {
   spawnPlayerBullet,
   updateBullets,
 } from "@/game/entities/bullets";
+import { bunkerRect, createBunkers, damageBunkerAt, drawBunkers } from "@/game/entities/bunkers";
 import { createPlayer, drawPlayer, playerRect, respawnPlayer, updatePlayer } from "@/game/entities/player";
 import { ALIEN_HEIGHT, ALIEN_WIDTH } from "@/game/sprites/claudeAliens";
 import { drawGameOverOverlay, drawHud } from "@/game/hud";
-import type { Bullet, InputState, Player } from "@/game/types";
+import type { Bullet, Bunker, InputState, Player } from "@/game/types";
 
 const PLAYER_BULLET_POOL_SIZE = 1;
 const ALIEN_BULLET_POOL_SIZE = 3;
@@ -44,6 +45,7 @@ export class GameEngine {
   private readonly playerBullets: Bullet[];
   private readonly alienBullets: Bullet[];
   private readonly aliens: AlienFormation;
+  private readonly bunkers: Bunker[];
   private score = 0;
   private alienFireTimer = randomBetween(ALIEN_FIRE_INTERVAL_MIN_MS, ALIEN_FIRE_INTERVAL_MAX_MS);
 
@@ -53,6 +55,7 @@ export class GameEngine {
     this.playerBullets = createBulletPool(PLAYER_BULLET_POOL_SIZE);
     this.alienBullets = createBulletPool(ALIEN_BULLET_POOL_SIZE);
     this.aliens = createAlienFormation();
+    this.bunkers = createBunkers();
   }
 
   update(dtMs: number): void {
@@ -80,8 +83,26 @@ export class GameEngine {
       this.alienFireTimer = randomBetween(ALIEN_FIRE_INTERVAL_MIN_MS, ALIEN_FIRE_INTERVAL_MAX_MS);
     }
 
+    this.handleBunkerCollisions(this.playerBullets);
+    this.handleBunkerCollisions(this.alienBullets);
     this.handlePlayerBulletCollisions();
     this.handleAlienBulletCollisions();
+  }
+
+  private handleBunkerCollisions(bullets: Bullet[]): void {
+    for (const bullet of bullets) {
+      if (!bullet.active) continue;
+      const bRect = bulletRect(bullet);
+      for (const bunker of this.bunkers) {
+        if (!aabbOverlap(bRect, bunkerRect(bunker))) continue;
+        const impactX = bullet.x + bRect.width / 2;
+        const impactY = bullet.y + bRect.height / 2;
+        if (damageBunkerAt(bunker, impactX, impactY)) {
+          bullet.active = false;
+          break;
+        }
+      }
+    }
   }
 
   private tryFireAlienBullet(): void {
@@ -126,6 +147,8 @@ export class GameEngine {
   draw(ctx: CanvasRenderingContext2D): void {
     ctx.fillStyle = COLORS.black;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    drawBunkers(ctx, this.bunkers);
 
     if (this.player.alive) {
       drawPlayer(ctx, this.player);

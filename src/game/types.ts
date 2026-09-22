@@ -33,3 +33,11 @@ export type Alien = {
   alive: boolean;
   frame: 0 | 1;
 };
+
+export type BunkerCell = 0 | 1;
+
+export type Bunker = {
+  originX: number;
+  originY: number;
+  pixels: BunkerCell[][];
+};
